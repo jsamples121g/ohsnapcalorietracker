@@ -81,11 +81,67 @@
         <p class="eyebrow">App preview</p>
         <h2>Clean screens. Fast decisions.</h2>
       </div>
-      <div class="screen-row">
-        <img src="assets/instant-nutrition.png" alt="Instant Nutrition screen" />
-        <img src="assets/trends.png" alt="Calorie Trends screen" />
-        <img src="assets/otf-sync.png" alt="OTF Easy Sync settings screen" />
-        <img src="assets/widgets.png" alt="OhSnap widgets screen" />
+      <div class="screen-carousel" data-screen-carousel aria-label="OhSnap app screen previews">
+        <button class="carousel-btn" type="button" data-carousel-prev aria-label="Previous screen">
+          <span aria-hidden="true">&larr;</span>
+        </button>
+        <div class="screen-viewport">
+          <div class="screen-track">
+            <figure class="screen-slide">
+              <img src="assets/screens/1-Snap1png.png" alt="Snap meal capture screen" />
+              <figcaption>Snap</figcaption>
+            </figure>
+            <figure class="screen-slide">
+              <img src="assets/screens/2-Snap%202.png" alt="Snap meal review screen" />
+              <figcaption>Snap review</figcaption>
+            </figure>
+            <figure class="screen-slide">
+              <img src="assets/screens/3-OTFSync.png" alt="OrangeTheory sync screen" />
+              <figcaption>OTF sync</figcaption>
+            </figure>
+            <figure class="screen-slide">
+              <img src="assets/screens/4-SmartFoodRecognition.png" alt="Smart food recognition screen" />
+              <figcaption>Smart food recognition</figcaption>
+            </figure>
+            <figure class="screen-slide">
+              <img src="assets/screens/5-CalorieGoals.png" alt="Calorie goals screen" />
+              <figcaption>Calorie goals</figcaption>
+            </figure>
+            <figure class="screen-slide">
+              <img src="assets/screens/6-InstantNutrition.png" alt="Instant nutrition screen" />
+              <figcaption>Instant nutrition</figcaption>
+            </figure>
+            <figure class="screen-slide">
+              <img src="assets/screens/7-MacroGoals.png" alt="Macro goals screen" />
+              <figcaption>Macro goals</figcaption>
+            </figure>
+            <figure class="screen-slide">
+              <img src="assets/screens/8-Trends.png" alt="Calorie trends screen" />
+              <figcaption>Trends</figcaption>
+            </figure>
+            <figure class="screen-slide">
+              <img src="assets/screens/9-Widgets.png" alt="OhSnap widgets screen" />
+              <figcaption>Widgets</figcaption>
+            </figure>
+          </div>
+        </div>
+        <button class="carousel-btn" type="button" data-carousel-next aria-label="Next screen">
+          <span aria-hidden="true">&rarr;</span>
+        </button>
+      </div>
+      <div class="screen-carousel-status">
+        <span data-carousel-counter aria-live="polite">1 / 9</span>
+        <div class="screen-dots" aria-label="Choose screen preview">
+          <button type="button" aria-label="Show Snap screen" aria-current="true"></button>
+          <button type="button" aria-label="Show Snap review screen"></button>
+          <button type="button" aria-label="Show OTF sync screen"></button>
+          <button type="button" aria-label="Show Smart food recognition screen"></button>
+          <button type="button" aria-label="Show Calorie goals screen"></button>
+          <button type="button" aria-label="Show Instant nutrition screen"></button>
+          <button type="button" aria-label="Show Macro goals screen"></button>
+          <button type="button" aria-label="Show Trends screen"></button>
+          <button type="button" aria-label="Show Widgets screen"></button>
+        </div>
       </div>
     </section>
 
@@ -109,7 +165,53 @@
 
   <footer>
     <strong>OhSnap Calorie Tracker</strong>
-    <span>Snap. Eat. Done.</span>
+    <div class="social-links" aria-label="OhSnap social links">
+      <a href="https://www.tiktok.com/@ohsnap.calorie.tr" target="_blank" rel="noopener">TikTok</a>
+      <a href="https://www.facebook.com/OhSnapCalorieTracker" target="_blank" rel="noopener">Facebook</a>
+    </div>
+    <span>Copyright Viewpoint Technology LLC</span>
   </footer>
+  <script>
+    (() => {
+      const carousel = document.querySelector("[data-screen-carousel]");
+      if (!carousel) return;
+
+      const track = carousel.querySelector(".screen-track");
+      const slides = Array.from(carousel.querySelectorAll(".screen-slide"));
+      const prevButton = carousel.querySelector("[data-carousel-prev]");
+      const nextButton = carousel.querySelector("[data-carousel-next]");
+      const counter = document.querySelector("[data-carousel-counter]");
+      const dots = Array.from(document.querySelectorAll(".screen-dots button"));
+      let currentIndex = 0;
+
+      const showSlide = (nextIndex) => {
+        currentIndex = (nextIndex + slides.length) % slides.length;
+        track.style.transform = `translateX(-${currentIndex * 100}%)`;
+        slides.forEach((slide, index) => {
+          slide.setAttribute("aria-hidden", String(index !== currentIndex));
+        });
+        dots.forEach((dot, index) => {
+          if (index === currentIndex) {
+            dot.setAttribute("aria-current", "true");
+          } else {
+            dot.removeAttribute("aria-current");
+          }
+        });
+        counter.textContent = `${currentIndex + 1} / ${slides.length}`;
+      };
+
+      prevButton.addEventListener("click", () => showSlide(currentIndex - 1));
+      nextButton.addEventListener("click", () => showSlide(currentIndex + 1));
+      dots.forEach((dot, index) => {
+        dot.addEventListener("click", () => showSlide(index));
+      });
+      carousel.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowLeft") showSlide(currentIndex - 1);
+        if (event.key === "ArrowRight") showSlide(currentIndex + 1);
+      });
+
+      showSlide(0);
+    })();
+  </script>
 </body>
 </html>
