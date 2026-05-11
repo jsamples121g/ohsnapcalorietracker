@@ -76,10 +76,14 @@ h2 { font-size: clamp(2.4rem, 5vw, 5.2rem); line-height: .98; letter-spacing: -.
 .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
 .feature-grid h3 { font-size: 1.35rem; margin-bottom: 10px; }
 .screen-carousel {
+  --screen-gap: 18px;
+  --slides-per-view: 3;
   display: grid;
   grid-template-columns: 54px minmax(0, 1fr) 54px;
   align-items: center;
-  gap: 18px;
+  gap: var(--screen-gap);
+  width: min(calc(100% - 40px), 1320px);
+  margin-inline: auto;
 }
 .screen-viewport {
   min-width: 0;
@@ -87,11 +91,12 @@ h2 { font-size: clamp(2.4rem, 5vw, 5.2rem); line-height: .98; letter-spacing: -.
 }
 .screen-track {
   display: flex;
+  gap: var(--screen-gap);
   transition: transform .35s ease;
 }
 .screen-slide {
   display: grid;
-  flex: 0 0 100%;
+  flex: 0 0 calc((100% - (var(--screen-gap) * (var(--slides-per-view) - 1))) / var(--slides-per-view));
   gap: 18px;
   justify-items: center;
   margin: 0;
@@ -191,6 +196,7 @@ footer { display: flex; align-items: center; justify-content: space-between; gap
   .quick-points, .feature-grid, .privacy, .feature-highlight { grid-template-columns: 1fr; }
   .feature-highlight { text-align: center; }
   .feature-highlight img { max-width: 360px; margin: 0 auto; }
+  .screen-carousel { --slides-per-view: 2; }
 }
 @media (max-width: 620px) {
   .site-header { padding: 14px 16px; }
@@ -198,10 +204,13 @@ footer { display: flex; align-items: center; justify-content: space-between; gap
   .nav-cta { padding: 9px 12px; }
   h1 { font-size: 4.6rem; }
   .quick-points article, .feature-grid article { padding: 22px; }
-  .screen-carousel { grid-template-columns: 44px minmax(0, 1fr) 44px; gap: 10px; }
+  .screen-carousel { --screen-gap: 10px; --slides-per-view: 1; grid-template-columns: 44px minmax(0, 1fr) 44px; }
   .carousel-btn { width: 44px; height: 44px; font-size: 1.1rem; }
   .screen-slide img { width: min(100%, 300px); border-radius: 24px; }
   .screen-carousel-status { flex-direction: column; }
   footer { flex-direction: column; align-items: flex-start; }
   .social-links { justify-content: flex-start; }
+}
+@media (min-width: 1240px) {
+  .screen-carousel { --slides-per-view: 4; }
 }

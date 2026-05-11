@@ -131,17 +131,7 @@
       </div>
       <div class="screen-carousel-status">
         <span data-carousel-counter aria-live="polite">1 / 9</span>
-        <div class="screen-dots" aria-label="Choose screen preview">
-          <button type="button" aria-label="Show Snap screen" aria-current="true"></button>
-          <button type="button" aria-label="Show Snap review screen"></button>
-          <button type="button" aria-label="Show OTF sync screen"></button>
-          <button type="button" aria-label="Show Smart food recognition screen"></button>
-          <button type="button" aria-label="Show Calorie goals screen"></button>
-          <button type="button" aria-label="Show Instant nutrition screen"></button>
-          <button type="button" aria-label="Show Macro goals screen"></button>
-          <button type="button" aria-label="Show Trends screen"></button>
-          <button type="button" aria-label="Show Widgets screen"></button>
-        </div>
+        <div class="screen-dots" data-carousel-dots aria-label="Choose screen preview group"></div>
       </div>
     </section>
 
@@ -181,35 +171,85 @@
       const prevButton = carousel.querySelector("[data-carousel-prev]");
       const nextButton = carousel.querySelector("[data-carousel-next]");
       const counter = document.querySelector("[data-carousel-counter]");
-      const dots = Array.from(document.querySelectorAll(".screen-dots button"));
+      const dotsContainer = document.querySelector("[data-carousel-dots]");
       let currentIndex = 0;
 
-      const showSlide = (nextIndex) => {
-        currentIndex = (nextIndex + slides.length) % slides.length;
-        track.style.transform = `translateX(-${currentIndex * 100}%)`;
-        slides.forEach((slide, index) => {
-          slide.setAttribute("aria-hidden", String(index !== currentIndex));
+      const getSlidesPerView = () => {
+        const value = getComputedStyle(carousel).getPropertyValue("--slides-per-view");
+        return Math.max(1, Math.min(slides.length, Number.parseInt(value, 10) || 1));
+      };
+
+      const getMaxIndex = () => Math.max(0, slides.length - getSlidesPerView());
+
+      const getPageStarts = () => {
+        const slidesPerView = getSlidesPerView();
+        const maxIndex = getMaxIndex();
+        const starts = [];
+        for (let index = 0; index < slides.length; index += slidesPerView) {
+          starts.push(Math.min(index, maxIndex));
+        }
+        return [...new Set(starts)];
+      };
+
+      const renderDots = () => {
+        dotsContainer.innerHTML = "";
+        getPageStarts().forEach((start, pageIndex) => {
+          const dot = document.createElement("button");
+          dot.type = "button";
+          dot.setAttribute("aria-label", `Show screen group ${pageIndex + 1}`);
+          dot.addEventListener("click", () => showSlide(start));
+          dotsContainer.append(dot);
         });
-        dots.forEach((dot, index) => {
-          if (index === currentIndex) {
+      };
+
+      const showSlide = (nextIndex) => {
+        const slidesPerView = getSlidesPerView();
+        const maxIndex = getMaxIndex();
+        currentIndex = Math.max(0, Math.min(nextIndex, maxIndex));
+        const slideWidth = slides[0].getBoundingClientRect().width;
+        const gap = Number.parseFloat(getComputedStyle(track).columnGap) || 0;
+        track.style.transform = `translateX(-${currentIndex * (slideWidth + gap)}px)`;
+        slides.forEach((slide, index) => {
+          const isVisible = index >= currentIndex && index < currentIndex + slidesPerView;
+          slide.setAttribute("aria-hidden", String(!isVisible));
+        });
+        Array.from(dotsContainer.children).forEach((dot, index) => {
+          if (getPageStarts()[index] === currentIndex) {
             dot.setAttribute("aria-current", "true");
           } else {
             dot.removeAttribute("aria-current");
           }
         });
-        counter.textContent = `${currentIndex + 1} / ${slides.length}`;
+        const rangeEnd = Math.min(currentIndex + slidesPerView, slides.length);
+        counter.textContent = slidesPerView === 1
+          ? `${currentIndex + 1} / ${slides.length}`
+          : `${currentIndex + 1}-${rangeEnd} / ${slides.length}`;
       };
 
-      prevButton.addEventListener("click", () => showSlide(currentIndex - 1));
-      nextButton.addEventListener("click", () => showSlide(currentIndex + 1));
-      dots.forEach((dot, index) => {
-        dot.addEventListener("click", () => showSlide(index));
+      const showNextPage = () => {
+        const pageStarts = getPageStarts();
+        const currentPage = pageStarts.findIndex((start) => start >= currentIndex);
+        showSlide(pageStarts[currentPage + 1] ?? 0);
+      };
+
+      const showPreviousPage = () => {
+        const pageStarts = getPageStarts();
+        const currentPage = pageStarts.findIndex((start) => start >= currentIndex);
+        showSlide(pageStarts[currentPage - 1] ?? pageStarts[pageStarts.length - 1]);
+      };
+
+      prevButton.addEventListener("click", showPreviousPage);
+      nextButton.addEventListener("click", showNextPage);
+      window.addEventListener("resize", () => {
+        renderDots();
+        showSlide(currentIndex);
       });
       carousel.addEventListener("keydown", (event) => {
-        if (event.key === "ArrowLeft") showSlide(currentIndex - 1);
-        if (event.key === "ArrowRight") showSlide(currentIndex + 1);
+        if (event.key === "ArrowLeft") showPreviousPage();
+        if (event.key === "ArrowRight") showNextPage();
       });
 
+      renderDots();
       showSlide(0);
     })();
   </script>
